@@ -101,6 +101,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'first_app.User' # changes built-in user model to ours
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
