@@ -4,15 +4,18 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 class UserManager(BaseUserManager):
 
-    def create_user(self, email, password=None, is_active=True, is_staff=False, is_admin=False):
+    def create_user(self, email, full_name, password=None, is_active=True, is_staff=False, is_admin=False):
         """
         Creates and saves a User with the given email and password.
         """
         if not email:
-            raise ValueError('Users must have an email address')
+            raise ValueError('User must have an email address')
         if not password:
-            raise ValueError('Users must have a password')
+            raise ValueError('User must have a password')
+        if not full_name:
+            raise ValueError('User must have a full name')
         user_obj = self.model(email = self.normalize_email(email))
+        user_obj.full_name = full_name
         user_obj.set_password(password) # change user password
         user_obj.active = is_active
         user_obj.staff = is_staff
@@ -20,17 +23,19 @@ class UserManager(BaseUserManager):
         user_obj.save(using = self._db)
         return user_obj
     
-    def create_staffuser(self, email, password=None):
+    def create_staffuser(self, email, full_name, password=None):
         user = self.create_user(
             email,
+            full_name,
             password = password,
             is_staff = True
         )
         return user
 
-    def create_superuser(self, email, password=None):
+    def create_superuser(self, email, full_name, password=None):
         user = self.create_user(
             email,
+            full_name,
             password = password,
             is_staff = True,
             is_admin = True 
@@ -38,8 +43,8 @@ class UserManager(BaseUserManager):
         return user
     
 class User(AbstractBaseUser):
-    username = models.CharField(max_length=64)
-    email = models.EmailField(verbose_name= 'email address', max_length=254, unique=True)
+    email = models.EmailField(verbose_name= 'email address', max_length=64, unique=True)
+    full_name = models.CharField(max_length=254, blank=True, null=True)
     active = models.BooleanField(default=True) # can login
     staff = models.BooleanField(default=False) # non-superuser
     admin = models.BooleanField(default=False) # superuser
@@ -47,7 +52,7 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'email' # username
 
-    REQUIRED_FIELDS = [] # email and password are required by default
+    REQUIRED_FIELDS = ['full_name'] # email and password are required by default
 
     objects = UserManager()
 
@@ -55,10 +60,10 @@ class User(AbstractBaseUser):
         return self.email
     
     def get_full_name(self):
-        return self.username
+        return self.full_name
     
     def get_short_name(self):
-        return self.username
+        return self.email
     
     def has_perm(self, perm, obj=None):
         '''
