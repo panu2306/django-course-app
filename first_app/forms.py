@@ -4,24 +4,13 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import User
 
 class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirm Password',widget=forms.PasswordInput)
+    class Meta():
+        model = User
+        fields = ['email', 'full_name', 'password']
 
-    def clean_email(self):
-        email = self.cleaned_data('email')
-        qs = User.objects.filter(email=email)
-        if(qs.exists()):
-            raise forms.ValidationError('Email is taken already.')
-        return email
-    
-    def clean_password(self):
-        password = self.cleaned_data('password')
-        password2 = self.cleaned_data('password2')
-
-        if(password and password2 and password != password2):
-            raise forms.ValidationError('Passwords do not match')
-        
-        return password2
+    email = forms.EmailField(max_length=64, help_text='Required. Add a valid email address.')
+    password = forms.CharField(max_length=128, widget=forms.PasswordInput())
+    confirm_password = forms.CharField(max_length=128, widget=forms.PasswordInput())
 
 class UserAdminCreationForm(forms.ModelForm):
     """

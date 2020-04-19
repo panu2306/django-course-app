@@ -1,0 +1,12 @@
+<div class="fieldWrapper">
+    <form method="post">
+        {% for field in form %}
+            {% csrf_token %}
+            {% for error in field.errors %}
+                <p style="color:red;">{{ error }}</p>
+            {% endfor %}
+            <p>{{ field.label_tag }}{{ field }}</p>
+        {% endfor %}
+        <input type="submit" value="Submit">
+    </form>
+</div>
